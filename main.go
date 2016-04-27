@@ -7,7 +7,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
-	"ldh"
+	"ldh/Cors"
+	"ldh/BasicAuth"
 )
 type Person struct {
 	Name string
@@ -16,7 +17,7 @@ type Person struct {
 func main() {
 	router := httprouter.New()
 	router.GET("/", Index)
-	router.GET("/hello/:name", Hello)
+	router.GET("/hello/:name", Basicauth.Auth(Hello))
 	err := http.ListenAndServe(":8080", Cors.CORS(router))
 	if err != nil {
 		log.Fatal(err)
