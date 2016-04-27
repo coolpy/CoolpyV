@@ -16,8 +16,8 @@ type Person struct {
 }
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
-	s := router.PathPrefix("/api").Subrouter()
-	s.HandleFunc("/", Index)
+	route := router.PathPrefix("/api").Subrouter()
+	route.HandleFunc("/", Index)
 	err:= http.ListenAndServe(":8080",Cors.CORS(router))
 	if err != nil{
 		log.Fatal(err)
