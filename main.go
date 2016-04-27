@@ -12,9 +12,29 @@ import (
 	"ldh/Models"
 	"encoding/json"
 	"ldh/Mdb"
+	"os"
 )
 
+var configuration interface{}
+
 func main() {
+	file, _ := os.Open("conf.json")
+	decoder := json.NewDecoder(file)
+	err := decoder.Decode(&configuration)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	conf, ok := configuration.(map[string]interface{})
+        if ok{
+		for k,v := range conf{
+			switch v2 := v.(type) {
+			case string:
+				fmt.Println(k,"is string", v2)
+			default:
+				fmt.Println(k,"kjfkdjfk")
+			}
+		}
+	}
 	router := httprouter.New()
 	router.GET("/", Index)
 	router.POST("/",IndexPost)

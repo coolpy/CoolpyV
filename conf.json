@@ -1,0 +1,5 @@
+{
+  "mongo":"mongodb://localhost:27017",
+  "Users": ["UserA","UserB"],
+  "Groups": ["GroupA"]
+}
