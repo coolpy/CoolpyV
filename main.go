@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
 	"net/http"
-	"html"
 	"ldh"
 )
 type Person struct {
@@ -15,11 +14,11 @@ type Person struct {
 	Phone string
 }
 func main() {
-	router := mux.NewRouter().StrictSlash(true)
-	route := router.PathPrefix("/api").Subrouter()
-	route.HandleFunc("/", Index)
-	err:= http.ListenAndServe(":8080",Cors.CORS(router))
-	if err != nil{
+	router := httprouter.New()
+	router.GET("/", Index)
+	router.GET("/hello/:name", Hello)
+	err := http.ListenAndServe(":8080", Cors.CORS(router))
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -47,7 +46,10 @@ func main() {
 
 	fmt.Println("Phone:", result.Phone)
 }
+  func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+      fmt.Fprint(w, "Welcome!\n")
+  }
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
-}
+  func Hello(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+      fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
+  }
