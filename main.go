@@ -28,10 +28,19 @@ func IndexPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
 	var p Models.Person
 	err := decoder.Decode(&p)
 	if err != nil {
-		panic(err)
+		w.WriteHeader(http.StatusNotFound)
+		log.Fatal(err)
 		return
 	}
-	json.NewEncoder(w).Encode(p)
+	Mdb.M("people", func(c * mgo.Collection) {
+		err = c.Insert(p)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			log.Fatal(err)
+			return
+		}
+		json.NewEncoder(w).Encode(p)
+	})
 }
 
   func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
