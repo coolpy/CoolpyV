@@ -11,24 +11,10 @@ import (
 	"ldh/BasicAuth"
 	"ldh/Models"
 	"encoding/json"
+	"ldh/Mdb"
 )
 
 func main() {
-	session, err := mgo.Dial("127.0.0.1:27017")
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-
-	// Optional. Switch the session to a monotonic behavior.
-	session.SetMode(mgo.Monotonic, true)
-
-	c := session.DB("test").C("people")
-	err = c.Insert(&Models.Person{"Ale", "+55 53 8116 9639"},&Models.Person{"Cla", "+55 53 8402 8510"})
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	router := httprouter.New()
 	router.GET("/", Index)
 	router.POST("/",IndexPost)
@@ -42,27 +28,21 @@ func IndexPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
 	var p Models.Person
 	err := decoder.Decode(&p)
 	if err != nil {
-		panic("error")
+		panic(err)
 		return
 	}
 	json.NewEncoder(w).Encode(p)
 }
 
   func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	  session, err := mgo.Dial("127.0.0.1:27017")
-	  if err != nil {
-		  panic(err)
-	  }
-	  defer session.Close()
-	  // Optional. Switch the session to a monotonic behavior.
-	  session.SetMode(mgo.Monotonic, true)
-	  c := session.DB("test").C("people")
-	  result := Models.Person{}
-	  err = c.Find(bson.M{"name": "Ale"}).One(&result)
-	  if err != nil {
-		  log.Fatal(err)
-	  }
-	  json.NewEncoder(w).Encode(result)
+	  Mdb.M("people", func(c *mgo.Collection) {
+		  result := []Models.Person{}
+		  err := c.Find(bson.M{"name": "Ale"}).All(&result)
+		  if err != nil {
+			  log.Fatal(err)
+		  }
+		  json.NewEncoder(w).Encode(result)
+	  })
   }
 
   func Hello(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
