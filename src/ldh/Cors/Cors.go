@@ -39,7 +39,7 @@ func CORS(next http.Handler) http.Handler {
 			w.Write(nil)
 			return
 		}
-
+		w.Header().Set("Content-Type","application/json;charset=utf-8")
 		next.ServeHTTP(w, r)
 	})
 }
