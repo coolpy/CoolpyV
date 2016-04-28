@@ -7,12 +7,13 @@ import (
 
 var (
 	session      *mgo.Session
-	databaseName = "test"
+	databaseName = "CoolpyV"
+	DatabaseAddress = ""
 )
 func Session() *mgo.Session {
 	if session == nil {
 		var err error
-		session, err = mgo.Dial("127.0.0.1:27017")
+		session, err = mgo.Dial(DatabaseAddress)
 		if err != nil {
 			panic(err) // no, not really
 		}

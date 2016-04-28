@@ -16,12 +16,17 @@ import (
 )
 
 var configuration interface{}
+var Version = "5.0.0.0"
 
 func main() {
+	fmt.Printf("Coolpy Version: %s\n", Version)
+        if _, err := os.Stat("conf.json"); err != nil {
+		log.Fatal("Config file is missing: ", "conf.json")
+		os.Exit(1)
+	}
 	file, _ := os.Open("conf.json")
 	decoder := json.NewDecoder(file)
-	err := decoder.Decode(&configuration)
-	if err != nil {
+	if err := decoder.Decode(&configuration); err != nil {
 		fmt.Println("error:", err)
 	}
 	conf, ok := configuration.(map[string]interface{})
@@ -29,9 +34,11 @@ func main() {
 		for k,v := range conf{
 			switch v2 := v.(type) {
 			case string:
-				fmt.Println(k,"is string", v2)
+				if k == "mongo" {
+					Mdb.DatabaseAddress = v2
+				}
 			default:
-				fmt.Println(k,"kjfkdjfk")
+				fmt.Println(k,v)
 			}
 		}
 	}
