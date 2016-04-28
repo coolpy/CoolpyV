@@ -28,6 +28,7 @@ func main() {
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&configuration); err != nil {
 		fmt.Println("error:", err)
+		os.Exit(1)
 	}
 	conf, ok := configuration.(map[string]interface{})
         if ok{
@@ -46,8 +47,9 @@ func main() {
 	router.GET("/", Index)
 	router.POST("/",IndexPost)
 	router.GET("/hello/:name", Basicauth.Auth(Hello))
-
-	log.Fatal(http.ListenAndServe(":8080", Cors.CORS(router)))
+        if err := http.ListenAndServe(":8080", Cors.CORS(router)); err != nil{
+		log.Fatal(err)
+	}
 }
 
 func IndexPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params){

@@ -15,7 +15,7 @@ func Session() *mgo.Session {
 		var err error
 		session, err = mgo.Dial(DatabaseAddress)
 		if err != nil {
-			panic(err) // no, not really
+			log.Fatal(err) // no, not really
 		}
 	}
 	return session.Clone()
