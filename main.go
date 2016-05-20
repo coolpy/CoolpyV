@@ -13,12 +13,15 @@ import (
 	"encoding/json"
 	"ldh/Mdb"
 	"os"
+	"mqtt"
 )
 
 var configuration interface{}
 var Version = "5.0.0.0"
 
 func main() {
+	fmt.Print(mqtt.Qq());
+	return
 	fmt.Printf("Coolpy Version: %s\n", Version)
 	if _, err := os.Stat("conf.json"); err != nil {
 		log.Fatal("Config file is missing: ", "conf.json")
