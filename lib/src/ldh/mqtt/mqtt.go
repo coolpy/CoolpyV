@@ -18,15 +18,6 @@ type Message struct {
 	payload      []byte
 }
 
-const RETAIN = 1;
-const Qos0 =  0x00;
-const Qos1  = 0x02;
-const Qos2  = 0x06;
-
-const DUP  = 8;
-
-& 0x8 = DUP
-
 type sendable struct {
 	m *Message
 	r chan Receipt
