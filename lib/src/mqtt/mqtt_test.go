@@ -39,3 +39,10 @@ func TestHeader_GetByte(t *testing.T) {
 		t.Error("转换出错",*buf)
 	}
 }
+
+func TestGetBytes(t *testing.T) {
+	bufs := GetBytes(128)
+	if(len(bufs) != 2) {
+		t.Error("出错",bufs)
+	}
+}

@@ -24,3 +24,17 @@ func (this * Header) GetByte() *byte  {
 	buf |= (byte)(this.Retain & 0x01)
 	return &buf
 }
+
+
+func GetBytes(length int) []byte{
+	var buffers []byte = []byte{}
+	for i := 0; i <4 && length > 0 ; i++  {
+		buf := (byte)(length & 0x7F);
+		length >>= 7
+		if(length > 0) {
+			buf |= 0x80
+		}
+		buffers = append(buffers,buf)
+	}
+	return buffers
+}
