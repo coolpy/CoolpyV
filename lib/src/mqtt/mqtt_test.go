@@ -20,7 +20,7 @@ func TestGetBytesPush(t *testing.T) {
 func TestGetHeaderPush(t *testing.T) {
 	t0 := time.Now()
 	for i := 1; i < size; i++ {
-		header := GetHeader(0x1B)
+		header := GetControlHeader(0x1B)
 		if(header.Control != Connect) {
 
 		}
@@ -28,9 +28,30 @@ func TestGetHeaderPush(t *testing.T) {
 	t1 := time.Now()
 	fmt.Printf("The TestGetHeader call took %v to run.\n", t1.Sub(t0))
 }
-3
+
+func TestGetBufferHeader(t *testing.T) {
+	var buf []byte = []byte{ 0x1B }
+	buf = append(buf,GetBytes(4)...)
+	bufferHeader := GetBufferHeader(buf)
+	if(bufferHeader.Control != Connect) {
+		t.Error("不是连接")
+	}
+	if(bufferHeader.Retain != Retain) {
+		t.Error("不是Retain")
+	}
+	if(bufferHeader.QoS != Qos1) {
+		t.Error("不是Qos1")
+	}
+	if(bufferHeader.Dup != Dup) {
+		t.Error("不是Dup")
+	}
+	if(bufferHeader.Len != 4) {
+		t.Error(bufferHeader.Len)
+	}
+}
+
 func TestGetHeader(t *testing.T) {
-	header := GetHeader(0x1B)
+	header := GetControlHeader(0x1B)
 	if(header.Control != Connect) {
 		t.Error("不是连接")
 	}
@@ -46,7 +67,7 @@ func TestGetHeader(t *testing.T) {
 }
 
 func TestGetLength(t *testing.T) {
-	length := GetLength(0x84)
+	length := GetLengthByUInt8(0x84)
 	if(length.IsContinue != Continue) {
 		t.Error("不是继续")
 	}
@@ -56,7 +77,7 @@ func TestGetLength(t *testing.T) {
 }
 
 func TestHeader_GetByte(t *testing.T) {
-	header := new(Header)
+	header := new(ControlHeader)
 	header.Control = Connect
 	header.Dup = Dup
 	header.QoS = Qos1

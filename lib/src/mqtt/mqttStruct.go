@@ -6,14 +6,14 @@ type MsgType byte
 type ContinueType byte
 
 const (
-	Qos0 QoS = 0x00;
-	Qos1 QoS = 0x02;
-	Qos2 QoS = 0x04;
+	Qos0 QoS = 0x00
+	Qos1 QoS = 0x02
+	Qos2 QoS = 0x04
 )
 
 const (
-	Dup byte = 0x08;
-	Retain byte = 0x01;
+	Dup byte = 0x08
+	Retain byte = 0x01
 )
 
 const (
@@ -36,17 +36,22 @@ const (
 
 const (
 	Continue ContinueType = 0x80
-	NotConinue ContinueType = 0x00
+	NotContinue ContinueType = 0x00
 )
 
-type Header struct {
+type ControlHeader struct {
 	Control MsgType
 	Dup byte
 	QoS QoS
 	Retain byte
 }
 
+type BufferHeader struct {
+	ControlHeader
+	Len uint
+}
+
 type Length struct  {
 	IsContinue ContinueType
-	Data uint8
+	Data uint
 }

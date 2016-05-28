@@ -1,23 +1,23 @@
 package mqtt
 
-func GetHeader(buf uint8) *Header {
-	header := new(Header)
-	header.Control = (MsgType)(buf & 0xf0);
-	header.Dup = buf & 0x08;
-	header.QoS = (QoS)(buf & 0x06);
-	header.Retain = buf & 0x01;
+func GetControlHeader(buf byte) *ControlHeader {
+	header := new(ControlHeader)
+	header.Control = (MsgType)(buf & 0xf0)
+	header.Dup = buf & 0x08
+	header.QoS = (QoS)(buf & 0x06)
+	header.Retain = buf & 0x01
 	return header
 }
 
-func GetLength(buf uint8) *Length {
+func GetLengthByUInt8(buf byte) *Length {
 	length := new(Length)
-	length.IsContinue = (ContinueType)(buf & 0x80);
-	length.Data = buf & 0x7F;
+	length.IsContinue = (ContinueType)(buf & 0x80)
+	length.Data = (uint)(buf & 0x7F)
 	return length
 }
 
-func (this * Header) GetByte() *byte  {
-	var buf byte;
+func (this * ControlHeader) GetByte() *byte  {
+	var buf byte
 	buf |= (byte)(this.Control & 0xF0)
 	buf |= (byte)(this.Dup & 0x08)
 	buf |= (byte)(this.QoS & 0x06)
@@ -25,6 +25,18 @@ func (this * Header) GetByte() *byte  {
 	return &buf
 }
 
+func GetBufferHeader(buf []byte) *BufferHeader {
+	bufferHeader := new(BufferHeader)
+	bufferHeader.ControlHeader = *GetControlHeader(buf[0])
+	for i := 0; i < 4 ; i++ {
+		length := GetLengthByUInt8(buf[i+1])
+		bufferHeader.Len |= ((length.Data) << (uint)(7 * i))
+		if(length.IsContinue == 0){
+			break
+		}
+	}
+	return bufferHeader
+}
 
 func GetBytes(length int) []byte{
 	var buffers []byte = []byte{}
