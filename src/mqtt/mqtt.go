@@ -1,55 +1,56 @@
 package mqtt
 
-func GetControlHeader(buf byte) *ControlHeader {
+func GetControlHeader(buf byte) (*ControlHeader,*error) {
 	header := new(ControlHeader)
 	header.Control = (MsgType)(buf & 0xf0)
 	header.Dup = buf & 0x08
 	header.QoS = (QoS)(buf & 0x06)
 	header.Retain = buf & 0x01
-	return header
+	return header,nil
 }
 
-func GetDefaultHeader(buf *[2]byte) *DefaultHeader {
+func GetDefaultHeader(buf []byte) (*DefaultHeader,*error) {
 	defaultHeader :=new(DefaultHeader)
-	defaultHeader.ControlHeader = GetControlHeader((*buf)[0])
-	defaultHeader.Length = GetLengthByByte((*buf)[1])
-	return defaultHeader
+	defaultHeader.ControlHeader,_ = GetControlHeader((buf)[0])
+	defaultHeader.Length,_ = GetLengthByByte((buf)[1])
+	return defaultHeader,nil
 }
 
-func GetLengthByByte(buf byte) *Length {
+func GetLengthByByte(buf byte) (*Length,*error) {
 	length := new(Length)
 	length.IsContinue = (ContinueType)(buf & 0x80)
 	length.Data = (uint)(buf & 0x7F)
-	return length
+	return length,nil
 }
 
-func CheckIsContinue(buf byte) bool{
-	return ContinueType(buf & 0x80) == Continue;
+func CheckIsContinue(buf byte) (bool,*error){
+	return ContinueType(buf & 0x80) == Continue,nil;
 }
 
-func (this *ControlHeader) GetByte() *byte  {
+func (this *ControlHeader) GetByte() (*byte,*error)  {
 	var buf byte
 	buf |= (byte)(this.Control & 0xF0)
 	buf |= (byte)(this.Dup & 0x08)
 	buf |= (byte)(this.QoS & 0x06)
 	buf |= (byte)(this.Retain & 0x01)
-	return &buf
+	return &buf,nil
 }
 
-func GetBufferHeader(buf []byte) *BufferHeader {
+func GetBufferHeader(buf []byte) (*BufferHeader,*error) {
 	bufferHeader := new(BufferHeader)
-	bufferHeader.ControlHeader = *GetControlHeader(buf[0])
+	controlHeader,_ := GetControlHeader(buf[0])
+	bufferHeader.ControlHeader = *controlHeader
 	for i := 0; i < 4 ; i++ {
-		length := GetLengthByByte(buf[i+1])
+		length,_ := GetLengthByByte(buf[i+1])
 		bufferHeader.Len |= ((length.Data) << (uint)(7 * i))
 		if(length.IsContinue == 0){
 			break
 		}
 	}
-	return bufferHeader
+	return bufferHeader,nil
 }
 
-func GetBytes(length int) []byte{
+func GetBytes(length int) ([]byte,*error) {
 	var buffers []byte = []byte{}
 	for i := 0; i <4 && length > 0 ; i++  {
 		buf := (byte)(length & 0x7F);
@@ -59,5 +60,5 @@ func GetBytes(length int) []byte{
 		}
 		buffers = append(buffers,buf)
 	}
-	return buffers
+	return buffers,nil
 }

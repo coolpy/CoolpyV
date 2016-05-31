@@ -10,7 +10,7 @@ import (
 const size = 10000000
 
 func TestGetDefaultHeader(t *testing.T) {
-	defaultHeader := GetDefaultHeader(&[2]byte { 0x1B , 0x04})
+	defaultHeader,_ := GetDefaultHeader([]byte { 0x1B , 0x04})
 	if(defaultHeader.Control != Connect){
 		t.Error("解析错误 Connect")
 	}
@@ -20,7 +20,7 @@ func TestGetDefaultHeader(t *testing.T) {
 }
 
 func TestCheckIsContinue(t *testing.T) {
-	isContinue := CheckIsContinue(0x80)
+	isContinue,_ := CheckIsContinue(0x80)
 	if(!isContinue){
 		t.Error("解析失败")
 	}
@@ -29,7 +29,7 @@ func TestCheckIsContinue(t *testing.T) {
 func TestGetBytesPush(t *testing.T) {
 	t0 := time.Now()
 	for i := 1; i < size; i++ {
-		_ = GetBytes(128)
+		_,_ = GetBytes(128)
 	}
 	t1 := time.Now()
 	fmt.Printf("The testIntVectorPush call took %v to run.\n", t1.Sub(t0))
@@ -37,12 +37,13 @@ func TestGetBytesPush(t *testing.T) {
 
 func TestIntVectorPush1(t *testing.T) {
 	var buf []byte = []byte{ 0x1B }
-	buf = append(buf,GetBytes(4)...)
+	bufs,_ := GetBytes(4)
+	buf = append(buf,bufs...)
 	t0 := time.Now()
 	for i := 1; i < size; i++ {
 		var buf1 []byte = make([]byte,1024)
 		copy(buf1,buf)
-		header := GetBufferHeader(buf1)
+		header,_ := GetBufferHeader(buf1)
 		if(header.Control != Connect) {
 
 		}
@@ -59,12 +60,13 @@ func TestIntVectorPush2(t *testing.T)  {
 		},
 	}
 	var buf []byte = []byte{ 0x1B }
-	buf = append(buf,GetBytes(4)...)
+	bufs,_ := GetBytes(4)
+	buf = append(buf,bufs...)
 	t0 := time.Now()
 	for i := 1; i < size; i++ {
 		buf1 := p.Get().(*[]byte)
 		copy(*buf1,buf)
-		header := GetBufferHeader(*buf1)
+		header,_ := GetBufferHeader(*buf1)
 		if(header.Control != Connect) {
 
 		}
@@ -77,7 +79,7 @@ func TestIntVectorPush2(t *testing.T)  {
 func TestGetHeaderPush(t *testing.T) {
 	t0 := time.Now()
 	for i := 1; i < size; i++ {
-		header := GetControlHeader(0x1B)
+		header,_ := GetControlHeader(0x1B)
 		if(header.Control != Connect) {
 
 		}
@@ -88,8 +90,9 @@ func TestGetHeaderPush(t *testing.T) {
 
 func TestGetBufferHeader(t *testing.T) {
 	var buf []byte = []byte{ 0x1B }
-	buf = append(buf,GetBytes(123456789)...)
-	bufferHeader := GetBufferHeader(buf)
+	bufs,_ := GetBytes(123456789)
+	buf = append(buf,bufs...)
+	bufferHeader,_ := GetBufferHeader(buf)
 	if(bufferHeader.Control != Connect) {
 		t.Error("不是连接")
 	}
@@ -108,7 +111,7 @@ func TestGetBufferHeader(t *testing.T) {
 }
 
 func TestGetHeader(t *testing.T) {
-	header := GetControlHeader(0x1B)
+	header,_ := GetControlHeader(0x1B)
 	if(header.Control != Connect) {
 		t.Error("不是连接")
 	}
@@ -124,7 +127,7 @@ func TestGetHeader(t *testing.T) {
 }
 
 func TestGetLength(t *testing.T) {
-	length := GetLengthByByte(0x84)
+	length,_ := GetLengthByByte(0x84)
 	if(length.IsContinue != Continue) {
 		t.Error("不是继续")
 	}
@@ -139,14 +142,14 @@ func TestHeader_GetByte(t *testing.T) {
 	header.Dup = Dup
 	header.QoS = Qos1
 	header.Retain = Retain
-	buf := header.GetByte();
+	buf,_ := header.GetByte();
 	if((*buf) != 0x1B){
 		t.Error("转换出错",*buf)
 	}
 }
 
 func TestGetBytes(t *testing.T) {
-	bufs := GetBytes(128)
+	bufs,_ := GetBytes(128)
 	if(len(bufs) != 2) {
 		t.Error("出错",bufs)
 	}

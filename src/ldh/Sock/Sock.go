@@ -121,7 +121,7 @@ func (this *Server) handleConnection(c io.Closer) error {
 			break
 		}
 
-		mt := mqtt.GetDefaultHeader((*header))
+		mt,_ := mqtt.GetDefaultHeader((*header))
 		if (mt.IsContinue == mqtt.Continue) {
 			*len[0] = header[1]
 			for i := 1; i < 4; i++ {
@@ -134,7 +134,7 @@ func (this *Server) handleConnection(c io.Closer) error {
 			}
 		}
 
-		pkglen := mqtt.GetBufferHeader(*len)
+		pkglen,_ := mqtt.GetBufferHeader(*len)
 		fmt.Println(pkglen)
 
 		//if read_len == 0 {
