@@ -9,6 +9,16 @@ import (
 
 const size = 10000000
 
+func TestGetDefaultHeader(t *testing.T) {
+	defaultHeader := GetDefaultHeader(&[2]byte { 0x1B , 0x04})
+	if(defaultHeader.Control != Connect){
+		t.Error("解析错误 Connect")
+	}
+	if(defaultHeader.IsContinue != NotContinue){
+		t.Error("解析错误 NotContinue")
+	}
+}
+
 func TestCheckIsContinue(t *testing.T) {
 	isContinue := CheckIsContinue(0x80)
 	if(!isContinue){

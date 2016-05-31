@@ -9,6 +9,13 @@ func GetControlHeader(buf byte) *ControlHeader {
 	return header
 }
 
+func GetDefaultHeader(buf *[2]byte) *DefaultHeader {
+	defaultHeader :=new(DefaultHeader)
+	defaultHeader.ControlHeader = GetControlHeader((*buf)[0])
+	defaultHeader.Length = GetLengthByByte((*buf)[1])
+	return defaultHeader
+}
+
 func GetLengthByByte(buf byte) *Length {
 	length := new(Length)
 	length.IsContinue = (ContinueType)(buf & 0x80)
@@ -20,7 +27,7 @@ func CheckIsContinue(buf byte) bool{
 	return ContinueType(buf & 0x80) == Continue;
 }
 
-func (this * ControlHeader) GetByte() *byte  {
+func (this *ControlHeader) GetByte() *byte  {
 	var buf byte
 	buf |= (byte)(this.Control & 0xF0)
 	buf |= (byte)(this.Dup & 0x08)

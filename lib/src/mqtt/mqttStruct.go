@@ -46,12 +46,17 @@ type ControlHeader struct {
 	Retain byte
 }
 
-type BufferHeader struct {
-	ControlHeader
-	Len uint
-}
-
 type Length struct  {
 	IsContinue ContinueType
 	Data uint
+}
+
+type DefaultHeader struct {
+	*ControlHeader
+	*Length
+}
+
+type BufferHeader struct {
+	ControlHeader
+	Len uint
 }
