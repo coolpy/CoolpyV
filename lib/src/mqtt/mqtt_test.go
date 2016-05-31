@@ -4,9 +4,17 @@ import (
 	"testing"
 	"fmt"
 	"time"
+	"sync"
 )
 
 const size = 10000000
+
+func TestCheckIsContinue(t *testing.T) {
+	isContinue := CheckIsContinue(0x80)
+	if(!isContinue){
+		t.Error("解析失败")
+	}
+}
 
 func TestGetBytesPush(t *testing.T) {
 	t0 := time.Now()
@@ -15,6 +23,45 @@ func TestGetBytesPush(t *testing.T) {
 	}
 	t1 := time.Now()
 	fmt.Printf("The testIntVectorPush call took %v to run.\n", t1.Sub(t0))
+}
+
+func TestIntVectorPush1(t *testing.T) {
+	var buf []byte = []byte{ 0x1B }
+	buf = append(buf,GetBytes(4)...)
+	t0 := time.Now()
+	for i := 1; i < size; i++ {
+		var buf1 []byte = make([]byte,1024)
+		copy(buf1,buf)
+		header := GetBufferHeader(buf1)
+		if(header.Control != Connect) {
+
+		}
+	}
+	t1 := time.Now()
+	fmt.Printf("The testIntVectorPush1 call took %v to run.\n", t1.Sub(t0))
+}
+
+func TestIntVectorPush2(t *testing.T)  {
+	p := &sync.Pool{
+		New: func() interface{} {
+			b := make([]byte,64*1024)
+			return &b
+		},
+	}
+	var buf []byte = []byte{ 0x1B }
+	buf = append(buf,GetBytes(4)...)
+	t0 := time.Now()
+	for i := 1; i < size; i++ {
+		buf1 := p.Get().(*[]byte)
+		copy(*buf1,buf)
+		header := GetBufferHeader(*buf1)
+		if(header.Control != Connect) {
+
+		}
+		p.Put(buf1)
+	}
+	t1 := time.Now()
+	fmt.Printf("The testIntVectorPush2 call took %v to run.\n", t1.Sub(t0))
 }
 
 func TestGetHeaderPush(t *testing.T) {
@@ -67,7 +114,7 @@ func TestGetHeader(t *testing.T) {
 }
 
 func TestGetLength(t *testing.T) {
-	length := GetLengthByUInt8(0x84)
+	length := GetLengthByByte(0x84)
 	if(length.IsContinue != Continue) {
 		t.Error("不是继续")
 	}
