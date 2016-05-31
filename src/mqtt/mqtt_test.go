@@ -90,9 +90,12 @@ func TestGetHeaderPush(t *testing.T) {
 
 func TestGetBufferHeader(t *testing.T) {
 	var buf []byte = []byte{ 0x1B }
-	bufs,_ := GetBytes(123456789)
+	bufs,_ := GetBytes(256)
 	buf = append(buf,bufs...)
 	bufferHeader,_ := GetBufferHeader(buf)
+	if(bufferHeader.LenIndex != 3){
+		t.Error("长度错误",bufferHeader.LenIndex)
+	}
 	if(bufferHeader.Control != Connect) {
 		t.Error("不是连接")
 	}
@@ -105,7 +108,7 @@ func TestGetBufferHeader(t *testing.T) {
 	if(bufferHeader.Dup != Dup) {
 		t.Error("不是Dup")
 	}
-	if(bufferHeader.Len != 123456789) {
+	if(bufferHeader.Len != 256) {
 		t.Error(bufferHeader.Len)
 	}
 }

@@ -39,11 +39,12 @@ func (this *ControlHeader) GetByte() (*byte,*error)  {
 func GetBufferHeader(buf []byte) (*BufferHeader,*error) {
 	bufferHeader := new(BufferHeader)
 	controlHeader,_ := GetControlHeader(buf[0])
-	bufferHeader.ControlHeader = *controlHeader
+	bufferHeader.ControlHeader = * controlHeader
 	for i := 0; i < 4 ; i++ {
 		length,_ := GetLengthByByte(buf[i+1])
 		bufferHeader.Len |= ((length.Data) << (uint)(7 * i))
 		if(length.IsContinue == 0){
+			bufferHeader.LenIndex = i + 2
 			break
 		}
 	}

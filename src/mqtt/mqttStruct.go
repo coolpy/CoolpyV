@@ -58,5 +58,6 @@ type DefaultHeader struct {
 
 type BufferHeader struct {
 	ControlHeader
+	LenIndex int
 	Len uint
 }
