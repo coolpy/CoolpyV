@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"ldh/Mdb"
 	"os"
+	"ldh/Sock"
 )
 
 var configuration interface{}
@@ -47,6 +48,7 @@ func main() {
 	router.GET("/", Index)
 	router.POST("/", IndexPost)
 	router.GET("/hello/:name", Basicauth.Auth(Hello))
+
 	if err := http.ListenAndServe(":8080", Cors.CORS(router)); err != nil {
 		log.Fatal(err)
 	}

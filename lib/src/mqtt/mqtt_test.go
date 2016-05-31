@@ -88,7 +88,7 @@ func TestGetHeaderPush(t *testing.T) {
 
 func TestGetBufferHeader(t *testing.T) {
 	var buf []byte = []byte{ 0x1B }
-	buf = append(buf,GetBytes(4)...)
+	buf = append(buf,GetBytes(123456789)...)
 	bufferHeader := GetBufferHeader(buf)
 	if(bufferHeader.Control != Connect) {
 		t.Error("不是连接")
@@ -102,7 +102,7 @@ func TestGetBufferHeader(t *testing.T) {
 	if(bufferHeader.Dup != Dup) {
 		t.Error("不是Dup")
 	}
-	if(bufferHeader.Len != 4) {
+	if(bufferHeader.Len != 123456789) {
 		t.Error(bufferHeader.Len)
 	}
 }
