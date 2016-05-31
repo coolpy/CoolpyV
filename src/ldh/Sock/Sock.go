@@ -78,19 +78,13 @@ func (this *Server) ListenAndServe(uri string) error {
 
 var headerPool = sync.Pool{
 	New:func() interface{} {
-		buf := make([]byte, 2)
+		buf := make([]byte, 5)
 		return &buf
 	},
 }
-var LenPool = sync.Pool{
+var bodyPool = sync.Pool{
 	New:func() interface{} {
-		buf := make([]byte, 4)
-		return &buf
-	},
-}
-var CheckLenPool = sync.Pool{
-	New:func() interface{} {
-		buf := new(byte)
+		buf := make([]byte, 512)
 		return &buf
 	},
 }
@@ -108,11 +102,9 @@ func (this *Server) handleConnection(c io.Closer) error {
 	conn.SetReadDeadline(time.Now().Add(time.Second * time.Duration(DefaultKeepAlive)))
 
 	header := headerPool.Get().(*[]byte)
-	len := LenPool.Get().(*[]byte)
-	clen := CheckLenPool.Get().(*byte)
 	defer headerPool.Put(header)
-	defer LenPool.Put(len)
-	defer CheckLenPool.Put(clen)
+	body := bodyPool.Get().(*[]byte)
+	defer bodyPool.Put(body)
 	for {
 		if _, err := conn.Read(*header); err != nil {
 			if err != io.EOF {
@@ -121,31 +113,12 @@ func (this *Server) handleConnection(c io.Closer) error {
 			break
 		}
 
-		mt,_ := mqtt.GetDefaultHeader((*header))
-		if (mt.IsContinue == mqtt.Continue) {
-			*len[0] = header[1]
-			for i := 1; i < 4; i++ {
-				if _, err := conn.Read(*clen); err == nil {
-					*len[i] = *clen
-					if !mqtt.CheckIsContinue((*clen)) {
-                                          break
-					}
-				}
+		if mt, err := mqtt.GetDefaultHeader((*header)); err == nil {
+			if hd, err := mqtt.GetBufferHeader(*header); err == nil {
+				(*body) =(*header)[hd.LenIndex:5]
+				fmt.Println(mt.Length)
 			}
 		}
-
-		pkglen,_ := mqtt.GetBufferHeader(*len)
-		fmt.Println(pkglen)
-
-		//if read_len == 0 {
-		//	break // connection already closed by client
-		//} else if string(*header) == "ti" {
-		//	daytime := strconv.FormatInt(time.Now().Unix(), 10)
-		//	conn.Write([]byte(daytime))
-		//} else {
-		//	daytime := time.Now().String()
-		//	conn.Write([]byte(daytime))
-		//}
 	}
 
 	return nil
