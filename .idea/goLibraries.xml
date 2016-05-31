@@ -3,8 +3,8 @@
   <component name="GoLibraries">
     <option name="urls">
       <list>
-        <option value="file://$PROJECT_DIR$" />
         <option value="file://$PROJECT_DIR$/lib" />
+        <option value="file://$PROJECT_DIR$" />
       </list>
     </option>
   </component>
