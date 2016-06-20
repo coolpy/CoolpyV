@@ -9,6 +9,16 @@ import (
 
 const size = 10000000
 
+func TestControlHeader_GetByte(t *testing.T) {
+	buf := make([]byte,122)
+	buf[0] = 1;
+	fmt.Print(buf[0]," ");
+	buf1 := buf[:2];
+	fmt.Print(buf1[0]," ");
+	buf1[0] = 2;
+	fmt.Print(buf[0],buf1[0])
+}
+
 func TestGetDefaultHeader(t *testing.T) {
 	defaultHeader,_ := GetDefaultHeader([]byte { 0x1B , 0x04})
 	if(defaultHeader.Control != Connect){

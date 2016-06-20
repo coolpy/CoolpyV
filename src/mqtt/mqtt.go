@@ -1,5 +1,26 @@
 package mqtt
 
+import (
+	"net"
+	"sync"
+)
+
+var bytePool = sync.Pool{
+	New:func() interface{} {
+		buf := make([]byte, 1)
+		return &buf
+	},
+}
+
+func GetHeader(conn net.TCPConn)  {
+	byte := bytePool.Get().(*[]byte)
+	conn.Read(byte)
+	controlHeader,_ := GetControlHeader(byte)
+	if(controlHeader.Control == Connect){
+
+	}
+}
+
 func GetControlHeader(buf byte) (*ControlHeader,*error) {
 	header := new(ControlHeader)
 	header.Control = (MsgType)(buf & 0xf0)
