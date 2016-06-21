@@ -12,17 +12,61 @@ var bytePool = sync.Pool{
 	},
 }
 
-func GetHeader(conn net.TCPConn)  {
-	byte := bytePool.Get().(*[]byte)
-	conn.Read(byte)
-	controlHeader,_ := GetControlHeader(byte)
-	if(controlHeader.Control == Connect){
-
+// 解析MQTT协议
+func GetMqtt(conn net.TCPConn) (*MqttBuffer,*error) {
+	mqttBuffer := new(MqttBuffer)
+	controlHeader,err := DeCodeControlHeaderFormTCPConn(conn)
+	if(err != nil){
+		return nil,err
 	}
+	mqttBuffer.MqttControl = controlHeader
+	len,err := DeCodeLenFormTCPConn(conn)
+	mqttBuffer.Len = len
+	return mqttBuffer,nil
 }
 
-func GetControlHeader(buf byte) (*ControlHeader,*error) {
-	header := new(ControlHeader)
+// 从TCP连接中获取一个字节的数据进行解码
+func DeCodeLenFormTCPConn(conn net.TCPConn) (*uint,*error) {
+	var len uint;
+	for i := 1 ; i < 4 ; i++ {
+		byteTemp,err := getByte(conn)
+		if(err != nil){
+			return nil,error("")
+		}
+		lenTemp,err := DeCodeLengthByByte(byteTemp)
+		if(err != nil){
+			return nil,error("")
+		}
+		len |= lenTemp << (i * 7)
+		if(lenTemp.IsContinue == 0){
+			return len,nil
+		}
+		defer bytePool.Put(byteTemp)
+	}
+	return nil,error("")
+}
+
+// 从TCP连接中获取一个字节的数据进行解码
+func DeCodeControlHeaderFormTCPConn(conn net.TCPConn) (*MqttControl,*error) {
+	byteTemp,err := getByte(conn)
+	if(err != nil){
+		return nil,error("")
+	}
+	controlHeader,err := DeCodeMqttHeaderByByte(byteTemp)
+	defer bytePool.Put(byteTemp)
+	return controlHeader,err
+}
+
+// 从网络中读取一个byte的数据
+func getByte(conn net.TCPConn) (*[]byte,*error) {
+	byteTemp := bytePool.Get().(*[]byte)
+	conn.Read(byteTemp)
+	return byteTemp,nil
+}
+
+// 从Byte中解析头部
+func DeCodeMqttHeaderByByte(buf byte) (*MqttControl,*error) {
+	header := new(MqttControl)
 	header.Control = (MsgType)(buf & 0xf0)
 	header.Dup = buf & 0x08
 	header.QoS = (QoS)(buf & 0x06)
@@ -30,25 +74,15 @@ func GetControlHeader(buf byte) (*ControlHeader,*error) {
 	return header,nil
 }
 
-func GetDefaultHeader(buf []byte) (*DefaultHeader,*error) {
-	defaultHeader :=new(DefaultHeader)
-	defaultHeader.ControlHeader,_ = GetControlHeader((buf)[0])
-	defaultHeader.Length,_ = GetLengthByByte((buf)[1])
-	return defaultHeader,nil
-}
-
-func GetLengthByByte(buf byte) (*Length,*error) {
+// 从byte中解析长度
+func DeCodeLengthByByte(buf byte) (*Length,*error) {
 	length := new(Length)
 	length.IsContinue = (ContinueType)(buf & 0x80)
 	length.Data = (uint)(buf & 0x7F)
 	return length,nil
 }
 
-func CheckIsContinue(buf byte) (bool,*error){
-	return ContinueType(buf & 0x80) == Continue,nil;
-}
-
-func (this *ControlHeader) GetByte() (*byte,*error)  {
+func (this *MqttControl) GetByte() (*byte,*error)  {
 	var buf byte
 	buf |= (byte)(this.Control & 0xF0)
 	buf |= (byte)(this.Dup & 0x08)
@@ -59,10 +93,10 @@ func (this *ControlHeader) GetByte() (*byte,*error)  {
 
 func GetBufferHeader(buf []byte) (*BufferHeader,*error) {
 	bufferHeader := new(BufferHeader)
-	controlHeader,_ := GetControlHeader(buf[0])
-	bufferHeader.ControlHeader = * controlHeader
+	controlHeader,_ := DeCodeMqttHeaderByByte(buf[0])
+	bufferHeader.MqttControl = * controlHeader
 	for i := 0; i < 4 ; i++ {
-		length,_ := GetLengthByByte(buf[i+1])
+		length,_ := DeCodeLengthByByte(buf[i+1])
 		bufferHeader.Len |= ((length.Data) << (uint)(7 * i))
 		if(length.IsContinue == 0){
 			bufferHeader.LenIndex = i + 2

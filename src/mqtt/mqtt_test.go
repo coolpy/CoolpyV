@@ -19,31 +19,6 @@ func TestControlHeader_GetByte(t *testing.T) {
 	fmt.Print(buf[0],buf1[0])
 }
 
-func TestGetDefaultHeader(t *testing.T) {
-	defaultHeader,_ := GetDefaultHeader([]byte { 0x1B , 0x04})
-	if(defaultHeader.Control != Connect){
-		t.Error("解析错误 Connect")
-	}
-	if(defaultHeader.IsContinue != NotContinue){
-		t.Error("解析错误 NotContinue")
-	}
-}
-
-func TestCheckIsContinue(t *testing.T) {
-	isContinue,_ := CheckIsContinue(0x80)
-	if(!isContinue){
-		t.Error("解析失败")
-	}
-}
-
-func TestGetBytesPush(t *testing.T) {
-	t0 := time.Now()
-	for i := 1; i < size; i++ {
-		_,_ = GetBytes(128)
-	}
-	t1 := time.Now()
-	fmt.Printf("The testIntVectorPush call took %v to run.\n", t1.Sub(t0))
-}
 
 func TestIntVectorPush1(t *testing.T) {
 	var buf []byte = []byte{ 0x1B }
@@ -54,7 +29,7 @@ func TestIntVectorPush1(t *testing.T) {
 		var buf1 []byte = make([]byte,1024)
 		copy(buf1,buf)
 		header,_ := GetBufferHeader(buf1)
-		if(header.Control != Connect) {
+		if(header.MqttControl != Connect) {
 
 		}
 	}
@@ -77,7 +52,7 @@ func TestIntVectorPush2(t *testing.T)  {
 		buf1 := p.Get().(*[]byte)
 		copy(*buf1,buf)
 		header,_ := GetBufferHeader(*buf1)
-		if(header.Control != Connect) {
+		if(header.MqttControl != Connect) {
 
 		}
 		p.Put(buf1)
@@ -89,7 +64,7 @@ func TestIntVectorPush2(t *testing.T)  {
 func TestGetHeaderPush(t *testing.T) {
 	t0 := time.Now()
 	for i := 1; i < size; i++ {
-		header,_ := GetControlHeader(0x1B)
+		header,_ := DeCodeMqttHeaderByByte(0x1B)
 		if(header.Control != Connect) {
 
 		}
@@ -106,7 +81,7 @@ func TestGetBufferHeader(t *testing.T) {
 	if(bufferHeader.LenIndex != 3){
 		t.Error("长度错误",bufferHeader.LenIndex)
 	}
-	if(bufferHeader.Control != Connect) {
+	if(bufferHeader.MqttControl != Connect) {
 		t.Error("不是连接")
 	}
 	if(bufferHeader.Retain != Retain) {
@@ -124,7 +99,7 @@ func TestGetBufferHeader(t *testing.T) {
 }
 
 func TestGetHeader(t *testing.T) {
-	header,_ := GetControlHeader(0x1B)
+	header,_ := DeCodeMqttHeaderByByte(0x1B)
 	if(header.Control != Connect) {
 		t.Error("不是连接")
 	}
@@ -140,7 +115,7 @@ func TestGetHeader(t *testing.T) {
 }
 
 func TestGetLength(t *testing.T) {
-	length,_ := GetLengthByByte(0x84)
+	length,_ := DeCodeLengthByByte(0x84)
 	if(length.IsContinue != Continue) {
 		t.Error("不是继续")
 	}
@@ -150,7 +125,7 @@ func TestGetLength(t *testing.T) {
 }
 
 func TestHeader_GetByte(t *testing.T) {
-	header := new(ControlHeader)
+	header := new(MqttControl)
 	header.Control = Connect
 	header.Dup = Dup
 	header.QoS = Qos1
