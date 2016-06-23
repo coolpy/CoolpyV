@@ -29,7 +29,7 @@ func TestIntVectorPush1(t *testing.T) {
 		var buf1 []byte = make([]byte,1024)
 		copy(buf1,buf)
 		header,_ := GetBufferHeader(buf1)
-		if(header.MqttControl != Connect) {
+		if(header.Control != Connect) {
 
 		}
 	}
@@ -52,7 +52,7 @@ func TestIntVectorPush2(t *testing.T)  {
 		buf1 := p.Get().(*[]byte)
 		copy(*buf1,buf)
 		header,_ := GetBufferHeader(*buf1)
-		if(header.MqttControl != Connect) {
+		if(header.Control != Connect) {
 
 		}
 		p.Put(buf1)
@@ -81,7 +81,7 @@ func TestGetBufferHeader(t *testing.T) {
 	if(bufferHeader.LenIndex != 3){
 		t.Error("长度错误",bufferHeader.LenIndex)
 	}
-	if(bufferHeader.MqttControl != Connect) {
+	if(bufferHeader.Control != Connect) {
 		t.Error("不是连接")
 	}
 	if(bufferHeader.Retain != Retain) {

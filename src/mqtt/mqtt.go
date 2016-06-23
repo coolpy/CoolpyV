@@ -21,38 +21,38 @@ func GetMqtt(conn net.TCPConn) (*MqttBuffer,*error) {
 	}
 	mqttBuffer.MqttControl = controlHeader
 	len,err := DeCodeLenFormTCPConn(conn)
-	mqttBuffer.Len = len
+	mqttBuffer.Len = *len
 	return mqttBuffer,nil
 }
 
 // 从TCP连接中获取一个字节的数据进行解码
 func DeCodeLenFormTCPConn(conn net.TCPConn) (*uint,*error) {
-	var len uint;
+	var len uint = 0;
 	for i := 1 ; i < 4 ; i++ {
 		byteTemp,err := getByte(conn)
 		if(err != nil){
-			return nil,error("")
+			return nil,new(error)
 		}
-		lenTemp,err := DeCodeLengthByByte(byteTemp)
+		lenTemp,err := DeCodeLengthByByte((*byteTemp)[0])
 		if(err != nil){
-			return nil,error("")
+			return nil,new(error)
 		}
-		len |= lenTemp << (i * 7)
+		len |= (lenTemp.Data) << (uint(i * 7))
 		if(lenTemp.IsContinue == 0){
-			return len,nil
+			return &len,nil
 		}
 		defer bytePool.Put(byteTemp)
 	}
-	return nil,error("")
+	return nil,new(error)
 }
 
 // 从TCP连接中获取一个字节的数据进行解码
 func DeCodeControlHeaderFormTCPConn(conn net.TCPConn) (*MqttControl,*error) {
 	byteTemp,err := getByte(conn)
 	if(err != nil){
-		return nil,error("")
+		return nil,new(error)
 	}
-	controlHeader,err := DeCodeMqttHeaderByByte(byteTemp)
+	controlHeader,err := DeCodeMqttHeaderByByte((*byteTemp)[0])
 	defer bytePool.Put(byteTemp)
 	return controlHeader,err
 }
@@ -60,7 +60,7 @@ func DeCodeControlHeaderFormTCPConn(conn net.TCPConn) (*MqttControl,*error) {
 // 从网络中读取一个byte的数据
 func getByte(conn net.TCPConn) (*[]byte,*error) {
 	byteTemp := bytePool.Get().(*[]byte)
-	conn.Read(byteTemp)
+	conn.Read(*byteTemp)
 	return byteTemp,nil
 }
 
