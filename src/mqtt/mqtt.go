@@ -5,9 +5,18 @@ import (
 	"sync"
 )
 
+//字节池
 var bytePool = sync.Pool{
 	New:func() interface{} {
 		buf := make([]byte, 1)
+		return &buf
+	},
+}
+
+//缓冲层
+var bufPool = sync.Pool{
+	New:func() interface{} {
+		buf := make([]byte,127)
 		return &buf
 	},
 }
@@ -22,7 +31,13 @@ func GetMqtt(conn net.TCPConn) (*MqttBuffer,*error) {
 	mqttBuffer.MqttControl = controlHeader
 	len,err := DeCodeLenFormTCPConn(conn)
 	mqttBuffer.Len = *len
+	mqttBuffer.body = DeCodeBodyFormTCPConn(conn,len)
 	return mqttBuffer,nil
+}
+
+//从TCP链接中获取body
+func DeCodeBodyFormTCPConn(conn net.TCPConn,len int)(*[]byte,*error){
+	return nil,nil
 }
 
 // 从TCP连接中获取一个字节的数据进行解码
@@ -34,14 +49,14 @@ func DeCodeLenFormTCPConn(conn net.TCPConn) (*uint,*error) {
 			return nil,new(error)
 		}
 		lenTemp,err := DeCodeLengthByByte((*byteTemp)[0])
+		defer bytePool.Put(byteTemp)
 		if(err != nil){
 			return nil,new(error)
 		}
 		len |= (lenTemp.Data) << (uint(i * 7))
-		if(lenTemp.IsContinue == 0){
-			return &len,nil
+		if(lenTemp.IsContinue == 0) {
+			return &len, nil
 		}
-		defer bytePool.Put(byteTemp)
 	}
 	return nil,new(error)
 }
